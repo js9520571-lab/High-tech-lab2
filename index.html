@@ -3,122 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Tech Float</title>
+    <title>Q-Engine Digital Hub</title>
     <style>
-        body {
+        :root {
+            --neon-blue: #58a6ff;
+            --neon-purple: #bc8cff;
+            --bg-dark: #0d1117;
+        }
+
+        body, html {
             margin: 0;
             padding: 0;
-            background-color: #0d1117; /* GitHub Dark Dimmed background */
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-dark);
+            color: #c9d1d9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
         }
 
-        #canvas {
-            position: absolute;
+        #cityCanvas {
+            position: fixed;
             top: 0;
             left: 0;
+            z-index: 1;
         }
 
-        .content {
+        /* Catalog UI */
+        .catalog-container {
             position: relative;
             z-index: 10;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             height: 100vh;
-            color: #c9d1d9;
-            pointer-events: none; /* Allows clicking through to the canvas if needed */
+            gap: 40px;
         }
 
-        h1 {
-            font-size: 3rem;
-            text-shadow: 0 0 20px rgba(88, 166, 255, 0.5);
-            background: linear-gradient(90deg, #58a6ff, #bc8cff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .header-title {
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        .cards-wrapper {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card {
+            width: 300px;
+            padding: 30px;
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid #30363d;
+            border-top: 4px solid var(--neon-blue);
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:nth-child(2) { border-top-color: var(--neon-purple); }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 30px rgba(88, 166, 255, 0.2);
+        }
+
+        .card h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: #fff; }
+        .card p { font-size: 0.9rem; color: #8b949e; line-height: 1.4; }
+        
+        .status-light {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #238636;
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 0 5px #238636;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="canvas"></canvas>
+    <canvas id="cityCanvas"></canvas>
 
-    <div class="content">
-        <h1>Digital Ecosystem</h1>
+    <div class="catalog-container">
+        <div class="header-title">
+            <h1>Digital Command Center</h1>
+            <p>Select a node to initialize link</p>
+        </div>
+
+        <div class="cards-wrapper">
+            <a href="https://cyber-hud-console--js9520571.replit.app" target="_blank" class="card">
+                <div class="status-light"></div>
+                <h2>Cyber HUD Console</h2>
+                <p>Initialize the immersive heads-up display interface and system diagnostics.</p>
+            </a>
+
+            <a href="https://js9520571-lab.github.io/q-engine-labs/" target="_blank" class="card">
+                <div class="status-light"></div>
+                <h2>Q-Engine Labs</h2>
+                <p>Access the experimental research laboratory and core engine development files.</p>
+            </a>
+        </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('canvas');
+        const canvas = document.getElementById('cityCanvas');
         const ctx = canvas.getContext('2d');
 
-        let particles = [];
-        const techIcons = ['{ }', '</>', '10', '01', '◈', 'λ', 'git', '∫', '[]'];
+        let buildings = [];
+        let cars = [];
 
         function init() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            particles = [];
             
-            // Create 100 tech objects
-            for (let i = 0; i < 100; i++) {
-                particles.push(new TechObject());
+            buildings = [];
+            cars = [];
+
+            // Generate Skyscrapers
+            const buildingCount = 15;
+            for (let i = 0; i < buildingCount; i++) {
+                buildings.push({
+                    x: (i * (canvas.width / 12)) + (Math.random() * 50),
+                    width: 80 + Math.random() * 100,
+                    height: 200 + Math.random() * (canvas.height * 0.6),
+                    windows: []
+                });
+                
+                // Add windows to each building
+                for(let j = 0; j < 40; j++) {
+                    buildings[i].windows.push({
+                        relX: Math.random() * 60 + 10,
+                        relY: Math.random() * 150 + 20,
+                        on: Math.random() > 0.5
+                    });
+                }
+            }
+
+            // Generate Initial Cars
+            for (let i = 0; i < 20; i++) {
+                cars.push(new FlyingCar());
             }
         }
 
-        class TechObject {
+        class FlyingCar {
             constructor() {
                 this.reset();
+                this.x = Math.random() * canvas.width; // Random start position
             }
 
             reset() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 15 + 10;
-                this.speedX = (Math.random() - 0.5) * 1.5;
-                this.speedY = (Math.random() - 0.5) * 1.5;
-                this.text = techIcons[Math.floor(Math.random() * techIcons.length)];
-                this.opacity = Math.random() * 0.5 + 0.1;
-                // Parallax depth effect
-                this.depth = Math.random() * 3 + 1; 
+                this.x = -50;
+                this.y = 100 + Math.random() * (canvas.height - 200);
+                this.speed = 2 + Math.random() * 5;
+                this.width = 30 + Math.random() * 20;
+                this.color = Math.random() > 0.5 ? '#58a6ff' : '#bc8cff';
             }
 
             update() {
-                this.x += this.speedX / this.depth;
-                this.y += this.speedY / this.depth;
-
-                // Wrap around screen
-                if (this.x > canvas.width) this.x = 0;
-                if (this.x < 0) this.x = canvas.width;
-                if (this.y > canvas.height) this.y = 0;
-                if (this.y < 0) this.y = canvas.height;
+                this.x += this.speed;
+                if (this.x > canvas.width) this.reset();
             }
 
             draw() {
-                ctx.font = `${this.size}px monospace`;
-                ctx.fillStyle = `rgba(139, 148, 158, ${this.opacity})`;
-                ctx.fillText(this.text, this.x, this.y);
-                
-                // Subtle glow for larger "closer" objects
-                if (this.depth < 1.5) {
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = "#58a6ff";
-                } else {
-                    ctx.shadowBlur = 0;
-                }
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color;
+                ctx.fillRect(this.x, this.y, this.width, 2);
+                ctx.shadowBlur = 0;
             }
         }
 
         function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
+            // Draw Night Sky
+            ctx.fillStyle = '#0d1117';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Buildings
+            buildings.forEach(b => {
+                ctx.fillStyle = '#161b22';
+                ctx.fillRect(b.x, canvas.height - b.height, b.width, b.height);
+
+                // Draw/Blink Windows
+                b.windows.forEach(w => {
+                    if(Math.random() > 0.99) w.on = !w.on; // Random blink
+                    ctx.fillStyle = w.on ? 'rgba(88, 166, 255, 0.3)' : '#0d1117';
+                    ctx.fillRect(b.x + w.relX, (canvas.height - b.height) + w.relY, 4, 4);
+                });
             });
+
+            // Draw Flying Cars
+            cars.forEach(car => {
+                car.update();
+                car.draw();
+            });
+
             requestAnimationFrame(animate);
         }
 
         window.addEventListener('resize', init);
-
         init();
         animate();
     </script>
