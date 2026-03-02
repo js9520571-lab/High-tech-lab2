@@ -3,163 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Q-Engine | 3D Command Center</title>
+    <title>Q-ENGINE | PROXIMITY HUB</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
-        canvas { display: block; }
-
-        /* Catalog Overlay */
-        .ui-layer {
+        :root { --accent: #00f2ff; --secondary: #7000ff; }
+        body { margin: 0; background: #000205; overflow: hidden; font-family: 'Inter', sans-serif; }
+        
+        /* High-End UI Overlay */
+        .interface {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            gap: 40px;
-            z-index: 100;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10; pointer-events: none;
         }
 
-        .card {
-            width: 280px;
-            height: 180px;
-            background: rgba(13, 17, 23, 0.7);
-            border: 1px solid rgba(88, 166, 255, 0.3);
-            border-radius: 12px;
-            padding: 20px;
-            backdrop-filter: blur(15px);
-            color: white;
-            text-decoration: none;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            text-align: center;
+        .nav-links {
+            display: flex; gap: 50px; pointer-events: auto;
+            perspective: 1000px;
         }
 
-        .card:hover {
-            transform: scale(1.1);
-            border-color: #58a6ff;
-            box-shadow: 0 0 30px rgba(88, 166, 255, 0.4);
-            background: rgba(13, 17, 23, 0.9);
+        .glass-card {
+            width: 320px; height: 200px;
+            background: rgba(0, 5, 10, 0.4);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            border-radius: 4px;
+            backdrop-filter: blur(20px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; text-decoration: none;
+            transition: 0.5s all cubic-bezier(0.2, 1, 0.3, 1);
+            position: relative; overflow: hidden;
         }
 
-        .card h2 { margin: 0; font-size: 1.4rem; letter-spacing: 2px; color: #58a6ff; }
-        .card p { color: #8b949e; font-size: 0.9rem; margin-top: 10px; }
+        .glass-card::before {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
+        }
 
-        .overlay-vignette {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.8) 100%);
-            pointer-events: none;
-            z-index: 5;
+        .glass-card:hover {
+            transform: rotateX(10deg) translateY(-20px);
+            border-color: var(--accent);
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.15);
+        }
+
+        .glass-card:hover::before { left: 100%; }
+
+        .label { font-size: 0.7rem; letter-spacing: 4px; color: var(--accent); margin-bottom: 10px; font-weight: bold; }
+        .title { font-size: 1.5rem; letter-spacing: 2px; text-transform: uppercase; }
+
+        .vignette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.9) 100%);
+            pointer-events: none; z-index: 5;
         }
     </style>
 </head>
 <body>
 
-    <div class="overlay-vignette"></div>
-
-    <div class="ui-layer">
-        <a href="https://cyber-hud-console--js9520571.replit.app" target="_blank" class="card">
-            <h2>CYBER HUD</h2>
-            <p>Node 01: Interactive Console</p>
-        </a>
-        <a href="https://js9520571-lab.github.io/q-engine-labs/" target="_blank" class="card">
-            <h2>LABS ENGINE</h2>
-            <p>Node 02: Research Environment</p>
-        </a>
+    <div class="vignette"></div>
+    <div class="interface">
+        <div class="nav-links">
+            <a href="https://cyber-hud-console--js9520571.replit.app" target="_blank" class="glass-card">
+                <span class="label">SECURE_LINK // 01</span>
+                <span class="title">CYBER HUD</span>
+            </a>
+            <a href="https://js9520571-lab.github.io/q-engine-labs/" target="_blank" class="glass-card">
+                <span class="label">SYSTEM_ACCESS // 02</span>
+                <span class="title">Q-LABS</span>
+            </a>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
-        let scene, camera, renderer, cityGroup, cars = [];
+        let scene, camera, renderer, clock;
+        let city = new THREE.Group();
+        let vehicles = [];
 
         function init() {
             scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x000000, 0.002);
-            
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 40, 100);
-            camera.lookAt(0, 0, 0);
+            scene.background = new THREE.Color(0x000205);
+            scene.fog = new THREE.FogExp2(0x000205, 0.0015);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 1000);
+            camera.position.set(0, 60, 150);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.toneMapping = THREE.ReinhardToneMapping;
             document.body.appendChild(renderer.domElement);
 
-            cityGroup = new THREE.Group();
-            scene.add(cityGroup);
+            clock = new THREE.Clock();
 
-            // 1. Create Buildings
-            const buildGeo = new THREE.BoxGeometry(1, 1, 1);
-            for(let i=0; i<200; i++) {
-                const material = new THREE.MeshPhongMaterial({
-                    color: 0x111111,
-                    emissive: 0x58a6ff,
-                    emissiveIntensity: Math.random() > 0.8 ? 0.5 : 0 // Random windows
-                });
+            // Lighting for "Realistic" Depth
+            const hemiLight = new THREE.HemisphereLight(0x00f2ff, 0x7000ff, 0.2);
+            scene.add(hemiLight);
+
+            // Generate Skyscrapers with "Window" textures
+            const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+            for(let i=0; i<300; i++) {
+                const h = 20 + Math.random() * 120;
+                const w = 10 + Math.random() * 15;
                 
-                const b = new THREE.Mesh(buildGeo, material);
-                b.position.x = Math.random() * 400 - 200;
-                b.position.z = Math.random() * 400 - 400;
-                b.scale.x = 10 + Math.random() * 10;
-                b.scale.y = 20 + Math.random() * 100;
-                b.scale.z = 10 + Math.random() * 10;
-                b.position.y = b.scale.y / 2;
-                cityGroup.add(b);
+                // Building Material with simulated windows
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x050505,
+                    shininess: 100,
+                    emissive: 0x00f2ff,
+                    emissiveIntensity: Math.random() > 0.7 ? Math.random() * 0.4 : 0
+                });
+
+                const building = new THREE.Mesh(boxGeo, material);
+                building.scale.set(w, h, w);
+                building.position.set(
+                    (Math.random() - 0.5) * 600,
+                    h/2,
+                    (Math.random() - 0.5) * 800 - 200
+                );
+                city.add(building);
             }
+            scene.add(city);
 
-            // 2. Lights
-            const ambientLight = new THREE.AmbientLight(0x404040, 2);
-            scene.add(ambientLight);
-            
-            const blueLight = new THREE.PointLight(0x58a6ff, 2, 200);
-            blueLight.position.set(0, 50, -50);
-            scene.add(blueLight);
-
-            // 3. Create Flying Cars (as light trails)
-            for(let i=0; i<60; i++) {
-                createCar();
+            // Generate Flying Traffic (Motion Trails)
+            for(let i=0; i<80; i++) {
+                createVehicle();
             }
 
             animate();
         }
 
-        function createCar() {
-            const carGeo = new THREE.BoxGeometry(0.5, 0.2, 4);
-            const carMat = new THREE.MeshBasicMaterial({ color: Math.random() > 0.5 ? 0x58a6ff : 0xbc8cff });
-            const car = new THREE.Mesh(carGeo, carMat);
-            
-            resetCar(car);
-            scene.add(car);
-            cars.push(car);
+        function createVehicle() {
+            const length = 5 + Math.random() * 15;
+            const geo = new THREE.BoxGeometry(0.4, 0.4, length);
+            const color = Math.random() > 0.3 ? 0x00f2ff : 0xff0055;
+            const mat = new THREE.MeshBasicMaterial({ 
+                color: color,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const v = new THREE.Mesh(geo, mat);
+            resetVehicle(v);
+            scene.add(v);
+            vehicles.push(v);
         }
 
-        function resetCar(car) {
-            car.position.x = Math.random() * 400 - 200;
-            car.position.y = 20 + Math.random() * 60;
-            car.position.z = -400;
-            car.userData.speed = 1 + Math.random() * 3;
+        function resetVehicle(v) {
+            v.position.x = (Math.random() - 0.5) * 500;
+            v.position.y = 30 + Math.random() * 80;
+            v.position.z = -500;
+            v.userData.speed = 2 + Math.random() * 4;
         }
 
         function animate() {
             requestAnimationFrame(animate);
+            const delta = clock.getElapsedTime();
 
-            // Move the city slowly toward the camera for a "flying" feel
-            cityGroup.position.z += 0.5;
-            if(cityGroup.position.z > 200) cityGroup.position.z = 0;
+            // Move City (Simulated flight)
+            city.position.z += 0.4;
+            if(city.position.z > 400) city.position.z = 0;
 
-            // Animate Cars
-            cars.forEach(car => {
-                car.position.z += car.userData.speed;
-                if(car.position.z > 100) resetCar(car);
-                
-                // Make cars flicker slightly
-                car.material.opacity = 0.5 + Math.random() * 0.5;
+            // Move Traffic
+            vehicles.forEach(v => {
+                v.position.z += v.userData.speed;
+                if(v.position.z > 200) resetVehicle(v);
             });
 
-            // Gentle camera sway
-            camera.position.x = Math.sin(Date.now() * 0.0005) * 10;
+            // "Realistic" Camera Sway
+            camera.position.y = 60 + Math.sin(delta * 0.5) * 5;
+            camera.position.x = Math.cos(delta * 0.3) * 10;
+            camera.lookAt(0, 40, -100);
 
             renderer.render(scene, camera);
         }
