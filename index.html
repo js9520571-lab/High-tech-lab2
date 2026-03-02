@@ -3,189 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Q-ENGINE | PROXIMITY HUB</title>
+    <title>Q-ENGINE | NEURAL INTERFACE</title>
     <style>
-        :root { --accent: #00f2ff; --secondary: #7000ff; }
-        body { margin: 0; background: #000205; overflow: hidden; font-family: 'Inter', sans-serif; }
-        
-        /* High-End UI Overlay */
-        .interface {
-            position: absolute;
-            width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 10; pointer-events: none;
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-purple: #bc8cff;
+            --glass: rgba(10, 15, 25, 0.7);
+            --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
-        .nav-links {
-            display: flex; gap: 50px; pointer-events: auto;
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            font-family: var(--font-main);
+            overflow: hidden;
+            color: white;
+        }
+
+        /* --- 1. THE VIDEO LAYER --- */
+        #bg-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -2;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            filter: brightness(0.5) contrast(1.2) saturate(1.2);
+        }
+
+        /* --- 2. THE SCANLINE OVERLAY (The "Realistic" Tech Look) --- */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* --- 3. THE INTERFACE --- */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.6) 100%);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            letter-spacing: 8px;
+            animation: bootUp 1.5s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #fff, var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.5));
+        }
+
+        .catalog {
+            display: flex;
+            gap: 40px;
             perspective: 1000px;
         }
 
-        .glass-card {
-            width: 320px; height: 200px;
-            background: rgba(0, 5, 10, 0.4);
-            border: 1px solid rgba(0, 242, 255, 0.2);
+        /* --- 4. THE HIGH-TECH CARDS --- */
+        .card {
+            width: 340px;
+            height: 220px;
+            background: var(--glass);
+            border: 1px solid rgba(0, 242, 255, 0.15);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 4px;
-            backdrop-filter: blur(20px);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: white; text-decoration: none;
-            transition: 0.5s all cubic-bezier(0.2, 1, 0.3, 1);
-            position: relative; overflow: hidden;
+            padding: 40px;
+            box-sizing: border-box;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            overflow: hidden;
         }
 
-        .glass-card::before {
-            content: ''; position: absolute; top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: 0.5s;
+        .card:hover {
+            transform: translateY(-15px) rotateX(5deg);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 40px rgba(0, 242, 255, 0.2);
+            background: rgba(15, 25, 40, 0.85);
         }
 
-        .glass-card:hover {
-            transform: rotateX(10deg) translateY(-20px);
-            border-color: var(--accent);
-            box-shadow: 0 0 50px rgba(0, 242, 255, 0.15);
+        /* Glitch Effect on Hover */
+        .card:hover .title {
+            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
         }
 
-        .glass-card:hover::before { left: 100%; }
+        .tag {
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: var(--neon-blue);
+            display: block;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
 
-        .label { font-size: 0.7rem; letter-spacing: 4px; color: var(--accent); margin-bottom: 10px; font-weight: bold; }
-        .title { font-size: 1.5rem; letter-spacing: 2px; text-transform: uppercase; }
+        .title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin: 0 0 10px 0;
+        }
 
-        .vignette {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.9) 100%);
-            pointer-events: none; z-index: 5;
+        .desc {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            line-height: 1.6;
+        }
+
+        /* Animations */
+        @keyframes bootUp {
+            0% { opacity: 0; transform: scale(0.9); filter: blur(10px); }
+            100% { opacity: 1; transform: scale(1); filter: blur(0); }
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); text-shadow: -2px 0 red, 2px 0 blue; }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .catalog { flex-direction: column; }
+            .card { width: 90vw; }
         }
     </style>
 </head>
 <body>
 
-    <div class="vignette"></div>
-    <div class="interface">
-        <div class="nav-links">
-            <a href="https://cyber-hud-console--js9520571.replit.app" target="_blank" class="glass-card">
-                <span class="label">SECURE_LINK // 01</span>
-                <span class="title">CYBER HUD</span>
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-flying-over-a-futuristic-city-at-night-43542-large.mp4" type="video/mp4">
+    </video>
+
+    <div class="overlay"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1>Q-ENGINE LABS</h1>
+            <div style="height: 2px; width: 100px; background: var(--neon-blue); margin: 10px auto;"></div>
+        </header>
+
+        <div class="catalog">
+            <a href="https://cyber-hud-console--js9520571.replit.app" target="_blank" class="card">
+                <span class="tag">LOCATION: REPLIT_SERVER</span>
+                <h2 class="title">CYBER HUD</h2>
+                <p class="desc">Neural uplink established. Access real-time diagnostics and HUD visualizers.</p>
             </a>
-            <a href="https://js9520571-lab.github.io/q-engine-labs/" target="_blank" class="glass-card">
-                <span class="label">SYSTEM_ACCESS // 02</span>
-                <span class="title">Q-LABS</span>
+
+            <a href="https://js9520571-lab.github.io/q-engine-labs/" target="_blank" class="card">
+                <span class="tag">LOCATION: GITHUB_NODES</span>
+                <h2 class="title">Q-LABS</h2>
+                <p class="desc">Core experimental environment. Researching next-gen digital architecture.</p>
             </a>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-    <script>
-        let scene, camera, renderer, clock;
-        let city = new THREE.Group();
-        let vehicles = [];
-
-        function init() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x000205);
-            scene.fog = new THREE.FogExp2(0x000205, 0.0015);
-
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 1000);
-            camera.position.set(0, 60, 150);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.toneMapping = THREE.ReinhardToneMapping;
-            document.body.appendChild(renderer.domElement);
-
-            clock = new THREE.Clock();
-
-            // Lighting for "Realistic" Depth
-            const hemiLight = new THREE.HemisphereLight(0x00f2ff, 0x7000ff, 0.2);
-            scene.add(hemiLight);
-
-            // Generate Skyscrapers with "Window" textures
-            const boxGeo = new THREE.BoxGeometry(1, 1, 1);
-            for(let i=0; i<300; i++) {
-                const h = 20 + Math.random() * 120;
-                const w = 10 + Math.random() * 15;
-                
-                // Building Material with simulated windows
-                const material = new THREE.MeshPhongMaterial({
-                    color: 0x050505,
-                    shininess: 100,
-                    emissive: 0x00f2ff,
-                    emissiveIntensity: Math.random() > 0.7 ? Math.random() * 0.4 : 0
-                });
-
-                const building = new THREE.Mesh(boxGeo, material);
-                building.scale.set(w, h, w);
-                building.position.set(
-                    (Math.random() - 0.5) * 600,
-                    h/2,
-                    (Math.random() - 0.5) * 800 - 200
-                );
-                city.add(building);
-            }
-            scene.add(city);
-
-            // Generate Flying Traffic (Motion Trails)
-            for(let i=0; i<80; i++) {
-                createVehicle();
-            }
-
-            animate();
-        }
-
-        function createVehicle() {
-            const length = 5 + Math.random() * 15;
-            const geo = new THREE.BoxGeometry(0.4, 0.4, length);
-            const color = Math.random() > 0.3 ? 0x00f2ff : 0xff0055;
-            const mat = new THREE.MeshBasicMaterial({ 
-                color: color,
-                transparent: true,
-                opacity: 0.8
-            });
-
-            const v = new THREE.Mesh(geo, mat);
-            resetVehicle(v);
-            scene.add(v);
-            vehicles.push(v);
-        }
-
-        function resetVehicle(v) {
-            v.position.x = (Math.random() - 0.5) * 500;
-            v.position.y = 30 + Math.random() * 80;
-            v.position.z = -500;
-            v.userData.speed = 2 + Math.random() * 4;
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            const delta = clock.getElapsedTime();
-
-            // Move City (Simulated flight)
-            city.position.z += 0.4;
-            if(city.position.z > 400) city.position.z = 0;
-
-            // Move Traffic
-            vehicles.forEach(v => {
-                v.position.z += v.userData.speed;
-                if(v.position.z > 200) resetVehicle(v);
-            });
-
-            // "Realistic" Camera Sway
-            camera.position.y = 60 + Math.sin(delta * 0.5) * 5;
-            camera.position.x = Math.cos(delta * 0.3) * 10;
-            camera.lookAt(0, 40, -100);
-
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        init();
-    </script>
 </body>
 </html>
