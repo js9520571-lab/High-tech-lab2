@@ -5,185 +5,175 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Q-ENGINE | NEURAL INTERFACE</title>
     <style>
-        :root {
-            --neon-blue: #00f2ff;
-            --neon-purple: #bc8cff;
-            --glass: rgba(10, 15, 25, 0.7);
-            --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Inter', sans-serif; }
+        canvas { display: block; filter: contrast(1.1) brightness(1.1); }
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            font-family: var(--font-main);
-            overflow: hidden;
-            color: white;
-        }
-
-        /* --- 1. THE VIDEO LAYER --- */
-        #bg-video {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-            z-index: -2;
+        /* Catalog UI */
+        .interface {
+            position: absolute;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            object-fit: cover;
-            filter: brightness(0.5) contrast(1.2) saturate(1.2);
-        }
-
-        /* --- 2. THE SCANLINE OVERLAY (The "Realistic" Tech Look) --- */
-        .overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 4px, 3px 100%;
+            z-index: 100;
+            display: flex; gap: 30px;
             pointer-events: none;
-            z-index: -1;
         }
 
-        /* --- 3. THE INTERFACE --- */
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.6) 100%);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 60px;
-            letter-spacing: 8px;
-            animation: bootUp 1.5s ease-out;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin: 0;
-            text-transform: uppercase;
-            background: linear-gradient(to right, #fff, var(--neon-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.5));
-        }
-
-        .catalog {
-            display: flex;
-            gap: 40px;
-            perspective: 1000px;
-        }
-
-        /* --- 4. THE HIGH-TECH CARDS --- */
         .card {
-            width: 340px;
-            height: 220px;
-            background: var(--glass);
-            border: 1px solid rgba(0, 242, 255, 0.15);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px);
+            width: 300px; height: 180px;
+            background: rgba(0, 8, 15, 0.6);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            backdrop-filter: blur(15px);
             border-radius: 4px;
-            padding: 40px;
-            box-sizing: border-box;
+            padding: 25px;
+            color: white;
             text-decoration: none;
-            color: inherit;
-            position: relative;
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            overflow: hidden;
+            pointer-events: auto;
+            transition: 0.4s ease;
+            display: flex; flex-direction: column; justify-content: center;
         }
 
         .card:hover {
-            transform: translateY(-15px) rotateX(5deg);
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 40px rgba(0, 242, 255, 0.2);
-            background: rgba(15, 25, 40, 0.85);
+            background: rgba(0, 242, 255, 0.1);
+            border-color: #00f2ff;
+            transform: translateY(-10px);
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
         }
 
-        /* Glitch Effect on Hover */
-        .card:hover .title {
-            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
-        }
+        .card h2 { margin: 0; font-size: 1.5rem; letter-spacing: 3px; color: #00f2ff; }
+        .card p { color: #8b949e; font-size: 0.85rem; margin-top: 10px; line-height: 1.5; }
 
-        .tag {
-            font-family: monospace;
-            font-size: 0.7rem;
-            color: var(--neon-blue);
-            display: block;
-            margin-bottom: 15px;
-            opacity: 0.8;
-        }
-
-        .title {
-            font-size: 1.8rem;
-            font-weight: 800;
-            letter-spacing: 2px;
-            margin: 0 0 10px 0;
-        }
-
-        .desc {
-            font-size: 0.9rem;
-            color: #a0aec0;
-            line-height: 1.6;
-        }
-
-        /* Animations */
-        @keyframes bootUp {
-            0% { opacity: 0; transform: scale(0.9); filter: blur(10px); }
-            100% { opacity: 1; transform: scale(1); filter: blur(0); }
-        }
-
-        @keyframes glitch {
-            0% { transform: translate(0); text-shadow: -2px 0 red, 2px 0 blue; }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
-            100% { transform: translate(0); }
-        }
-
-        /* Mobile Optimization */
-        @media (max-width: 768px) {
-            .catalog { flex-direction: column; }
-            .card { width: 90vw; }
+        .vignette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none; z-index: 5;
         }
     </style>
 </head>
 <body>
 
-    <video autoplay muted loop playsinline id="bg-video">
-        <source src="https://assets.mixkit.co/videos/preview/mixkit-flying-over-a-futuristic-city-at-night-43542-large.mp4" type="video/mp4">
-    </video>
-
-    <div class="overlay"></div>
-
-    <div class="container">
-        <header class="header">
-            <h1>Q-ENGINE LABS</h1>
-            <div style="height: 2px; width: 100px; background: var(--neon-blue); margin: 10px auto;"></div>
-        </header>
-
-        <div class="catalog">
-            <a href="https://cyber-hud-console--js9520571.replit.app" target="_blank" class="card">
-                <span class="tag">LOCATION: REPLIT_SERVER</span>
-                <h2 class="title">CYBER HUD</h2>
-                <p class="desc">Neural uplink established. Access real-time diagnostics and HUD visualizers.</p>
-            </a>
-
-            <a href="https://js9520571-lab.github.io/q-engine-labs/" target="_blank" class="card">
-                <span class="tag">LOCATION: GITHUB_NODES</span>
-                <h2 class="title">Q-LABS</h2>
-                <p class="desc">Core experimental environment. Researching next-gen digital architecture.</p>
-            </a>
-        </div>
+    <div class="vignette"></div>
+    <div class="interface">
+        <a href="https://cyber-hud-console--js9520571.replit.app" target="_blank" class="card">
+            <h2>CYBER HUD</h2>
+            <p>Initialize real-time diagnostic interface and neural uplink.</p>
+        </a>
+        <a href="https://js9520571-lab.github.io/q-engine-labs/" target="_blank" class="card">
+            <h2>Q-LABS</h2>
+            <p>Access experimental physics engine and core laboratory files.</p>
+        </a>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        let scene, camera, renderer, cityGroup, cars = [];
+        const CITY_SIZE = 1000;
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000205);
+            scene.fog = new THREE.FogExp2(0x000205, 0.002);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+            camera.position.set(0, 40, 100);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+
+            cityGroup = new THREE.Group();
+            scene.add(cityGroup);
+
+            // Create Realistic Buildings
+            const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+            for (let i = 0; i < 400; i++) {
+                const h = 20 + Math.random() * 150;
+                const w = 15 + Math.random() * 15;
+                
+                // Dark glass material with "emissive" windows
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x050505,
+                    roughness: 0.1,
+                    metalness: 0.9,
+                    emissive: Math.random() > 0.6 ? 0x00f2ff : 0x000000,
+                    emissiveIntensity: 0.5
+                });
+
+                const building = new THREE.Mesh(boxGeo, material);
+                building.scale.set(w, h, w);
+                building.position.set(
+                    (Math.random() - 0.5) * 800,
+                    h / 2,
+                    (Math.random() - 0.5) * 1000 - 300
+                );
+                cityGroup.add(building);
+            }
+
+            // Flying Car Light Trails
+            for (let i = 0; i < 100; i++) {
+                createCar();
+            }
+
+            // Lights
+            const ambient = new THREE.AmbientLight(0xffffff, 0.1);
+            scene.add(ambient);
+            
+            const bluePoint = new THREE.PointLight(0x00f2ff, 2, 500);
+            bluePoint.position.set(0, 100, -100);
+            scene.add(bluePoint);
+
+            animate();
+        }
+
+        function createCar() {
+            const isBlue = Math.random() > 0.3;
+            const color = isBlue ? 0x00f2ff : 0x7000ff;
+            const length = 10 + Math.random() * 20;
+            
+            const geo = new THREE.BoxGeometry(0.5, 0.5, length);
+            const mat = new THREE.MeshBasicMaterial({ color: color });
+            const car = new THREE.Mesh(geo, mat);
+            
+            resetCar(car);
+            scene.add(car);
+            cars.push(car);
+        }
+
+        function resetCar(car) {
+            car.position.x = (Math.random() - 0.5) * 600;
+            car.position.y = 20 + Math.random() * 100;
+            car.position.z = -600;
+            car.userData.speed = 2 + Math.random() * 6;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Move camera forward through the city
+            camera.position.z -= 0.5;
+            if (camera.position.z < -400) camera.position.z = 100;
+
+            // Move cars
+            cars.forEach(car => {
+                car.position.z += car.userData.speed;
+                if (car.position.z > 200) resetCar(car);
+            });
+
+            // Gentle camera tilt
+            camera.rotation.y = Math.sin(Date.now() * 0.0002) * 0.05;
+            camera.rotation.z = Math.cos(Date.now() * 0.0002) * 0.02;
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        init();
+    </script>
 </body>
 </html>
